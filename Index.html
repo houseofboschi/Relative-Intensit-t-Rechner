@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RI Calculator</title>
+
+<link rel="manifest" href="manifest.json">
+
+<style>
+body{
+  font-family: Arial, sans-serif;
+  max-width: 500px;
+  margin: auto;
+  padding:20px;
+  background:#f4f4f4;
+}
+input, select{
+  width:100%;
+  padding:8px;
+  margin:5px 0 15px 0;
+  font-size:16px;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:white;
+}
+th,td{
+  padding:8px;
+  border:1px solid #ccc;
+  text-align:center;
+}
+th{background:#eee;}
+</style>
+</head>
+
+<body>
+
+<h2>Relative Intensity Calculator</h2>
+
+<label>Getestetes RM (kg)</label>
+<input id="rmWeight" type="number" value="100">
+
+<label>Test-RM (1–10)</label>
+<input id="testRM" type="number" min="1" max="10" value="3">
+
+<label>Relative Intensität (z.B. 0.80)</label>
+<input id="ri" type="number" step="0.01" value="0.80">
+
+<label>Rundung</label>
+<select id="roundStep">
+  <option value="0.005">0,5 %</option>
+  <option value="0.025" selected>2,5 %</option>
+</select>
+
+<table>
+<thead>
+<tr>
+<th>Reps</th>
+<th>% vom Test-RM</th>
+<th>Gewicht (kg)</th>
+</tr>
+</thead>
+<tbody id="resultTable"></tbody>
+</table>
+
+<script src="app.js"></script>
+
+</body>
+</html>

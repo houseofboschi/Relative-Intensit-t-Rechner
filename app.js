@@ -1,104 +1,64 @@
-// 🔥 FIREBASE IMPORTS
-import { initializeApp } from
-"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+document.addEventListener("DOMContentLoaded", () => {
 
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  onSnapshot,
-  query,
-  orderBy,
-  limit,
-  serverTimestamp
-} from
-"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-
-// 🔥 DEINE FIREBASE CONFIG HIER EINSETZEN
-const firebaseConfig = {
-  apiKey: "AIzaSyDMAmfE-kfnX-g1T08Ad0Uw3kmLKs2fH30",
-  authDomain: "ri-calculator.firebaseapp.com",
-  projectId: "ri-calculator",
-  storageBucket: "ri-calculator.firebasestorage.app",
-  messagingSenderId: "640294756569",
-  appId: "1:640294756569:web:e9902b040c6749f7abdec8"
+const rmTable = {
+  1:1.00,
+  2:0.95,
+  3:0.93,
+  4:0.90,
+  5:0.87,
+  6:0.85,
+  7:0.83,
+  8:0.80,
+  9:0.77,
+  10:0.75
 };
 
-
-// INIT
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-
-
-/* =========================
-   PR SPEICHERN
-========================= */
-
-document.getElementById("savePR")
-.addEventListener("click", async () => {
-
-  const athlete =
-    document.getElementById("athleteName").value;
-
-  const exercise =
-    document.getElementById("exerciseName").value;
-
-  const value =
-    parseFloat(document.getElementById("prValue").value);
-
-  if(!athlete || !exercise || !value){
-    alert("Bitte alle Felder ausfüllen");
-    return;
-  }
-
-  await addDoc(collection(db,"leaderboard"),{
-    athlete,
-    exercise,
-    value,
-    timestamp: serverTimestamp()
-  });
-
-});
-
-
-
-/* =========================
-   🔥 REALTIME LEADERBOARD
-========================= */
-
-function startLeaderboardListener(){
-
-  const table =
-    document.getElementById("leaderboardBody");
-
-  const q = query(
-    collection(db,"leaderboard"),
-    orderBy("value","desc"),
-    limit(50)
-  );
-
-  onSnapshot(q,(snapshot)=>{
-
-    table.innerHTML="";
-
-    snapshot.forEach(doc=>{
-
-      const d = doc.data();
-
-      table.innerHTML += `
-        <tr>
-          <td>${d.athlete}</td>
-          <td>${d.exercise}</td>
-          <td>${d.value} kg</td>
-        </tr>
-      `;
-    });
-
-  });
+function roundStep(value, step){
+  return Math.round(value / step) * step;
 }
 
+function calculate(){
 
-// START LISTENER
-startLeaderboardListener();
+  const rmWeight =
+    parseFloat(document.getElementById("rmWeight").value) || 0;
+
+  const testRM =
+    parseInt(document.getElementById("testRM").value) || 1;
+
+  const RI =
+    parseFloat(document.getElementById("intensity").value) / 100;
+
+  const step =
+    parseFloat(document.getElementById("roundStep").value);
+
+  const tbody = document.getElementById("resultTable");
+  tbody.innerHTML = "";
+
+  for(let reps = 1; reps <= 10; reps++){
+
+    let percent =
+      (rmTable[reps] * RI) / rmTable[testRM];
+
+    percent = roundStep(percent, step);
+
+    const weight = rmWeight * percent;
+
+    const row = `
+      <tr>
+        <td>${reps}</td>
+        <td>${(percent*100).toFixed(1)}%</td>
+        <td>${weight.toFixed(1)}</td>
+      </tr>
+    `;
+
+    tbody.innerHTML += row;
+  }
+}
+
+// Live Update
+document.querySelectorAll("input,select")
+  .forEach(el => el.addEventListener("input", calculate));
+
+calculate();
+
+});

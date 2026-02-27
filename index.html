@@ -4,49 +4,29 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>RM Tracker</title>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<!-- Firebase -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  onSnapshot,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDMAmfE-kfnX-g1T08Ad0Uw3kmLKs2fH30",
-  authDomain: "ri-calculator.firebaseapp.com",
-  projectId: "ri-calculator",
-  storageBucket: "ri-calculator.firebasestorage.app",
-  messagingSenderId: "640294756569",
-  appId: "1:640294756569:web:e9902b040c6749f7abdec8"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-window.db = db;
-window.firebaseFns = { collection, addDoc, onSnapshot, serverTimestamp };
-</script>
+<title>RI Calculator</title>
 
 <style>
 body{
-  font-family:Arial;
-  max-width:900px;
+  font-family: Arial;
+  max-width:700px;
   margin:auto;
   padding:20px;
+  background:#f4f4f4;
+}
+
+input, select, button{
+  width:100%;
+  padding:8px;
+  margin:5px 0 15px 0;
+  font-size:16px;
 }
 
 table{
-  border-collapse:collapse;
   width:100%;
-  margin-top:10px;
+  border-collapse:collapse;
+  background:white;
+  margin-top:15px;
 }
 
 th,td{
@@ -55,287 +35,41 @@ th,td{
   text-align:center;
 }
 
-input,select,button{
-  padding:8px;
-  margin:5px;
-}
-
-.section{
-  margin-top:30px;
-  padding:15px;
-  border:1px solid #ddd;
-  border-radius:10px;
-}
+th{background:#eee;}
 </style>
 </head>
 
 <body>
 
-<h1>Rep Max Tracker</h1>
+<h2>Relative Intensity Calculator</h2>
 
-<!-- ATHLETEN -->
-<div class="section">
-<h2>Athlet</h2>
+<label>Athlet</label>
+<input id="athleteName" placeholder="Name eingeben">
 
-<select id="athleteSelect"></select>
-<input id="newAthlete" placeholder="Neuer Athlet">
-<button onclick="addAthlete()">Anlegen</button>
-</div>
+<label>Übung</label>
+<input id="exerciseName" placeholder="z.B. Hang Power Clean">
 
-<!-- QUICK RM TABLE -->
-<div class="section">
-<h2>Schnellübersicht</h2>
+<label>PR Gewicht (kg)</label>
+<input id="prValue" type="number">
 
-<table>
-<tr>
-<th>1RM</th>
-<th>2RM</th>
-<th>3RM</th>
-<th>5RM</th>
-</tr>
-<tr>
-<td id="q1"></td>
-<td id="q2"></td>
-<td id="q3"></td>
-<td id="q5"></td>
-</tr>
-</table>
-</div>
+<button id="savePR">PR speichern</button>
 
-<!-- RM INPUT -->
-<div class="section">
-<h2>RM Test eingeben</h2>
-
-<select id="rmSelect"></select>
-<input type="number" id="weightInput" placeholder="Gewicht">
-<button onclick="saveRM()">Speichern</button>
-
-<table id="rmTable">
-<tr>
-<th>RM</th>
-<th>Gewicht</th>
-</tr>
-</table>
-</div>
-
-<!-- PROGRESS -->
-<div class="section">
-<h2>Progress Verlauf</h2>
-<canvas id="progressChart"></canvas>
-</div>
-
-<!-- LEADERBOARD -->
-<div class="section">
-<h2>🌍 Leaderboard</h2>
-
-<input id="lbName" placeholder="Name">
-<input id="lbExercise" placeholder="Übung">
-<input type="number" id="lbWeight" placeholder="Gewicht">
-
-<button onclick="submitLeaderboard()">Eintragen</button>
+<h3>Leaderboard</h3>
 
 <table>
+<thead>
 <tr>
-<th>Name</th>
+<th>Athlet</th>
 <th>Übung</th>
-<th>Gewicht</th>
+<th>PR</th>
 </tr>
+</thead>
+
 <tbody id="leaderboardBody"></tbody>
 </table>
 
-</div>
-
-<script>
-/* ===============================
-   RM FORMEL
-================================*/
-function calc1RM(weight,reps){
-  return weight*(1+reps/30);
-}
-
-function calcFrom1RM(oneRM,reps){
-  return oneRM/(1+reps/30);
-}
-
-/* ===============================
-   ATHLETEN SYSTEM
-================================*/
-let athletes=JSON.parse(localStorage.getItem("athletes")||"[]");
-let currentAthlete=null;
-
-function addAthlete(){
-  const name=document.getElementById("newAthlete").value;
-  if(!name)return;
-  athletes.push(name);
-  localStorage.setItem("athletes",JSON.stringify(athletes));
-  renderAthletes();
-}
-
-function renderAthletes(){
-  const sel=document.getElementById("athleteSelect");
-  sel.innerHTML="";
-  athletes.forEach(a=>{
-    const o=document.createElement("option");
-    o.text=a;
-    sel.add(o);
-  });
-  currentAthlete=sel.value;
-  loadData();
-}
-
-document.getElementById("athleteSelect").onchange=()=>{
-  currentAthlete=document.getElementById("athleteSelect").value;
-  loadData();
-};
-
-/* ===============================
-   RM INPUT LIST
-================================*/
-const rmSelect=document.getElementById("rmSelect");
-for(let i=1;i<=10;i++){
-  const o=document.createElement("option");
-  o.value=i;
-  o.text=i+"RM";
-  rmSelect.add(o);
-}
-
-/* ===============================
-   STORAGE
-================================*/
-function key(){
-  return "rmData_"+currentAthlete;
-}
-
-function loadData(){
-  renderTable();
-  updateQuick();
-  updateChart();
-}
-
-function saveRM(){
-  const reps=parseInt(rmSelect.value);
-  const weight=parseFloat(document.getElementById("weightInput").value);
-
-  let data=JSON.parse(localStorage.getItem(key())||"{}");
-  data[reps]=weight;
-
-  let history=JSON.parse(localStorage.getItem(key()+"_history")||"[]");
-  history.push({
-    date:new Date().toLocaleDateString(),
-    oneRM:calc1RM(weight,reps)
-  });
-
-  localStorage.setItem(key(),JSON.stringify(data));
-  localStorage.setItem(key()+"_history",JSON.stringify(history));
-
-  loadData();
-}
-
-/* ===============================
-   RM TABLE
-================================*/
-function renderTable(){
-  const table=document.getElementById("rmTable");
-  table.innerHTML="<tr><th>RM</th><th>Gewicht</th></tr>";
-
-  let data=JSON.parse(localStorage.getItem(key())||"{}");
-
-  for(let i=1;i<=10;i++){
-    const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${i}RM</td><td>${data[i]||"-"}</td>`;
-    table.appendChild(tr);
-  }
-}
-
-/* ===============================
-   QUICK TABLE
-================================*/
-function updateQuick(){
-  let data=JSON.parse(localStorage.getItem(key())||"{}");
-
-  let oneRM=data[1];
-  if(!oneRM){
-    for(let r in data){
-      oneRM=calc1RM(data[r],r);
-      break;
-    }
-  }
-  if(!oneRM)return;
-
-  document.getElementById("q1").innerText=(data[1]||oneRM).toFixed(1);
-  document.getElementById("q2").innerText=(data[2]||calcFrom1RM(oneRM,2)).toFixed(1);
-  document.getElementById("q3").innerText=(data[3]||calcFrom1RM(oneRM,3)).toFixed(1);
-  document.getElementById("q5").innerText=(data[5]||calcFrom1RM(oneRM,5)).toFixed(1);
-}
-
-/* ===============================
-   PROGRESS GRAPH
-================================*/
-let chart;
-
-function updateChart(){
-  const ctx=document.getElementById("progressChart");
-  let history=JSON.parse(localStorage.getItem(key()+"_history")||"[]");
-
-  if(chart) chart.destroy();
-
-  chart=new Chart(ctx,{
-    type:"line",
-    data:{
-      labels:history.map(h=>h.date),
-      datasets:[{
-        label:"1RM Progress",
-        data:history.map(h=>h.oneRM)
-      }]
-    }
-  });
-}
-
-/* ===============================
-   FIREBASE LEADERBOARD
-================================*/
-async function submitLeaderboard(){
-
-  const {collection,addDoc,serverTimestamp}=window.firebaseFns;
-
-  await addDoc(
-    collection(window.db,"leaderboard"),
-    {
-      name:lbName.value,
-      exercise:lbExercise.value,
-      weight:Number(lbWeight.value),
-      created:serverTimestamp()
-    }
-  );
-}
-
-function loadLeaderboard(){
-
-  const {collection,onSnapshot}=window.firebaseFns;
-
-  onSnapshot(collection(window.db,"leaderboard"),snap=>{
-    const body=document.getElementById("leaderboardBody");
-    body.innerHTML="";
-
-    snap.forEach(doc=>{
-      const d=doc.data();
-      body.innerHTML+=`
-        <tr>
-          <td>${d.name}</td>
-          <td>${d.exercise}</td>
-          <td>${d.weight}</td>
-        </tr>`;
-    });
-  });
-}
-
-/* ===============================
-   INIT
-================================*/
-renderAthletes();
-loadLeaderboard();
-
-</script>
+<!-- APP -->
+<script type="module" src="app.js"></script>
 
 </body>
 </html>

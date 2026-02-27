@@ -3,20 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RI Calculator</title>
-
-<link rel="manifest" href="manifest.json">
+<title>RI Coach App</title>
 
 <style>
 body{
-  font-family: Arial;
-  max-width:500px;
+  font-family:Arial;
+  max-width:520px;
   margin:auto;
   padding:20px;
   background:#f4f4f4;
 }
 
-input, select, button{
+input,select,button{
   width:100%;
   padding:8px;
   margin:5px 0 15px 0;
@@ -27,7 +25,6 @@ button{
   background:#222;
   color:white;
   border:none;
-  cursor:pointer;
 }
 
 table{
@@ -37,36 +34,51 @@ table{
 }
 
 th,td{
-  padding:8px;
   border:1px solid #ccc;
+  padding:8px;
   text-align:center;
 }
-
-th{background:#eee;}
 </style>
 </head>
 
 <body>
 
-<h2>Relative Intensity Calculator</h2>
+<h2>RI Coach App</h2>
 
-<!-- ===== PR SYSTEM ===== -->
+<!-- ATHLETE -->
+<label>Athlet</label>
+<input id="athleteName" placeholder="Athlet Name">
 
+<button onclick="saveAthlete()">Athlet speichern</button>
+
+<select id="athleteSelect"></select>
+
+<!-- EXERCISE -->
 <label>Übung</label>
-<input id="exerciseName" placeholder="z.B. Hang Power Clean">
+<input id="exerciseName" placeholder="Übung">
+
+<button onclick="saveExercise()">Übung speichern</button>
+
+<select id="exerciseSelect"></select>
+
+<!-- PR INPUTS -->
+<h3>PR Werte</h3>
+
+<label>1RM</label>
+<input id="rm1" type="number">
+
+<label>2RM</label>
+<input id="rm2" type="number">
+
+<label>3RM</label>
+<input id="rm3" type="number">
+
+<label>5RM</label>
+<input id="rm5" type="number">
 
 <button onclick="savePR()">PR speichern</button>
 
-<label>Gespeicherte Übungen</label>
-<select id="exerciseSelect"></select>
-
-<!-- ===== RM INPUT ===== -->
-
-<label>PR Gewicht (kg)</label>
-<input id="rmWeight" type="number" value="100">
-
-<label>Test RM (1–10)</label>
-<input id="testRM" type="number" min="1" max="10" value="3">
+<hr>
 
 <label>Relative Intensität</label>
 <select id="intensity">
@@ -76,12 +88,6 @@ th{background:#eee;}
   <option value="87.5">87,5%</option>
   <option value="90">90%</option>
   <option value="92.5">92,5%</option>
-</select>
-
-<label>Rundung</label>
-<select id="roundStep">
-  <option value="0.005">0,5 %</option>
-  <option value="0.025" selected>2,5 %</option>
 </select>
 
 <table>

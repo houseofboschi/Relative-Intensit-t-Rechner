@@ -3,63 +3,55 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RM Calculator</title>
-
-<link rel="manifest" href="manifest.json">
+<title>RI Calculator</title>
 
 <style>
 body{
-  font-family:Arial;
-  background:#111;
-  color:white;
-  padding:20px;
-  max-width:700px;
+  font-family: Arial;
+  max-width:600px;
   margin:auto;
+  padding:20px;
+  background:#f4f4f4;
 }
 
 input,select,button{
-  padding:8px;
-  margin:5px 0;
   width:100%;
+  padding:8px;
+  margin:5px 0 15px 0;
+  font-size:16px;
 }
 
 table{
   width:100%;
   border-collapse:collapse;
-  margin-top:15px;
+  background:white;
+  margin-bottom:20px;
 }
 
-td,th{
-  border:1px solid #444;
+th,td{
+  border:1px solid #ccc;
   padding:8px;
   text-align:center;
 }
 
-.pr-table input{
-  width:80px;
-  text-align:center;
-}
+th{background:#eee;}
 </style>
 </head>
 
 <body>
 
-<h2>🏋️ RM Calculator</h2>
+<h2>Relative Intensity Calculator</h2>
 
-<!-- Übung speichern -->
-<h3>Übung</h3>
-
-<input id="exerciseName" placeholder="Neue Übung eingeben">
-<button onclick="saveExercise()">Übung speichern</button>
-
+<!-- ÜBUNG -->
+<label>Übung</label>
 <select id="exerciseSelect"></select>
 
-<hr>
+<input id="newExercise" placeholder="Neue Übung">
+<button onclick="addExercise()">Übung speichern</button>
 
-<!-- PR Tabelle -->
-<h3>PR Werte</h3>
-
-<table class="pr-table">
+<!-- RM ÜBERSICHT -->
+<h3>RM Übersicht</h3>
+<table>
 <thead>
 <tr>
 <th>1RM</th>
@@ -68,49 +60,40 @@ td,th{
 <th>5RM</th>
 </tr>
 </thead>
-
 <tbody>
 <tr>
-<td><input id="rm1"></td>
-<td><input id="rm2"></td>
-<td><input id="rm3"></td>
-<td><input id="rm5"></td>
+<td id="rm1">-</td>
+<td id="rm2">-</td>
+<td id="rm3">-</td>
+<td id="rm5">-</td>
 </tr>
 </tbody>
 </table>
 
-<hr>
+<!-- TEST INPUT -->
+<label>Getestetes Gewicht (kg)</label>
+<input id="rmWeight" type="number" value="100">
 
-<h3>Berechnung</h3>
-
-<label>Gewicht (Test RM)</label>
-<input id="rmWeight" type="number">
-
-<label>Test RM</label>
-<select id="testRM">
-<option value="1">1RM</option>
-<option value="2">2RM</option>
-<option value="3">3RM</option>
-<option value="5">5RM</option>
-</select>
+<label>Test RM (1–10)</label>
+<input id="testRM" type="number" min="1" max="10" value="3">
 
 <label>Relative Intensität</label>
 <select id="intensity">
-<option>80</option>
-<option>82.5</option>
-<option>85</option>
-<option>87.5</option>
-<option>90</option>
-<option>92.5</option>
+<option value="80">80%</option>
+<option value="82.5">82.5%</option>
+<option value="85">85%</option>
+<option value="87.5">87.5%</option>
+<option value="90">90%</option>
+<option value="92.5">92.5%</option>
 </select>
 
 <label>Rundung</label>
 <select id="roundStep">
-<option value="0.5">0.5 kg</option>
-<option value="1">1 kg</option>
-<option value="2.5">2.5 kg</option>
+<option value="0.005">0,5 %</option>
+<option value="0.025" selected>2,5 %</option>
 </select>
 
+<!-- RESULT TABLE -->
 <table>
 <thead>
 <tr>
@@ -119,11 +102,9 @@ td,th{
 <th>Gewicht</th>
 </tr>
 </thead>
-
 <tbody id="resultTable"></tbody>
 </table>
 
 <script src="app.js"></script>
-
 </body>
 </html>

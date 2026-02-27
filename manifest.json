@@ -1,9 +1,10 @@
 {
   "name": "RI Calculator",
   "short_name": "RI Calc",
-  "start_url": "index.html",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#ffffff",
+  "theme_color": "#f4f4f4",
+  "description": "Relative Intensity Calculator for Strength Training",
   "icons": []
 }

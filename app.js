@@ -17,12 +17,12 @@ import {
 
 // 🔥 DEINE FIREBASE CONFIG HIER EINSETZEN
 const firebaseConfig = {
-  apiKey: "PASTE_HERE",
-  authDomain: "PASTE_HERE",
-  projectId: "PASTE_HERE",
-  storageBucket: "PASTE_HERE",
-  messagingSenderId: "PASTE_HERE",
-  appId: "PASTE_HERE"
+  apiKey: "AIzaSyDMAmfE-kfnX-g1T08Ad0Uw3kmLKs2fH30",
+  authDomain: "ri-calculator.firebaseapp.com",
+  projectId: "ri-calculator",
+  storageBucket: "ri-calculator.firebasestorage.app",
+  messagingSenderId: "640294756569",
+  appId: "1:640294756569:web:e9902b040c6749f7abdec8"
 };
 
 

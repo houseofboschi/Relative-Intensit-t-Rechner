@@ -5,10 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RI Calculator</title>
 
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
 body{
   font-family: Arial;
-  max-width:600px;
+  max-width:700px;
   margin:auto;
   padding:20px;
   background:#f4f4f4;
@@ -35,6 +38,11 @@ th,td{
 }
 
 th{background:#eee;}
+
+canvas{
+  background:white;
+  padding:10px;
+}
 </style>
 </head>
 
@@ -42,14 +50,19 @@ th{background:#eee;}
 
 <h2>Relative Intensity Calculator</h2>
 
-<!-- ÜBUNG -->
-<label>Übung</label>
-<select id="exerciseSelect"></select>
+<!-- ATHLETE -->
+<h3>Athlet</h3>
+<select id="athleteSelect"></select>
+<input id="newAthlete" placeholder="Neuer Athlet">
+<button onclick="addAthlete()">Athlet hinzufügen</button>
 
+<!-- EXERCISE -->
+<h3>Übung</h3>
+<select id="exerciseSelect"></select>
 <input id="newExercise" placeholder="Neue Übung">
 <button onclick="addExercise()">Übung speichern</button>
 
-<!-- RM ÜBERSICHT -->
+<!-- RM OVERVIEW -->
 <h3>RM Übersicht</h3>
 <table>
 <thead>
@@ -70,7 +83,7 @@ th{background:#eee;}
 </tbody>
 </table>
 
-<!-- TEST INPUT -->
+<!-- INPUT -->
 <label>Getestetes Gewicht (kg)</label>
 <input id="rmWeight" type="number" value="100">
 
@@ -105,6 +118,26 @@ th{background:#eee;}
 <tbody id="resultTable"></tbody>
 </table>
 
+<!-- GRAPH -->
+<h3>Progress Graph</h3>
+<canvas id="progressChart"></canvas>
+
+<!-- HISTORY -->
+<h3>Progress History</h3>
+<table>
+<thead>
+<tr>
+<th>Datum</th>
+<th>Athlet</th>
+<th>Übung</th>
+<th>RM</th>
+<th>Gewicht</th>
+</tr>
+</thead>
+<tbody id="historyTable"></tbody>
+</table>
+
 <script src="app.js"></script>
+
 </body>
 </html>

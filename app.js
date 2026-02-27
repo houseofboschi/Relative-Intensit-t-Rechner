@@ -1,158 +1,138 @@
-/* ======================
-   RM BASIS TABELLE
-====================== */
+/* ===============================
+   RM PROFILE
+================================*/
 
 const rmTable = {
-  1:1.00,
-  2:0.95,
-  3:0.93,
-  4:0.90,
-  5:0.87,
-  6:0.85,
-  7:0.83,
-  8:0.80,
-  9:0.77,
-  10:0.75
+  1:1.00, 2:0.95, 3:0.93, 4:0.90, 5:0.87,
+  6:0.85, 7:0.83, 8:0.80, 9:0.77, 10:0.75
 };
 
-/* ======================
-   LOCAL STORAGE
-====================== */
+/* ===============================
+   STORAGE
+================================*/
 
-function getExercises(){
-  return JSON.parse(localStorage.getItem("exercises") || "{}");
+function getData(){
+  return JSON.parse(localStorage.getItem("prData") || "{}");
 }
 
-function saveExercises(data){
-  localStorage.setItem("exercises", JSON.stringify(data));
+function saveData(data){
+  localStorage.setItem("prData", JSON.stringify(data));
 }
 
-/* ======================
-   ÜBUNGEN
-====================== */
+/* ===============================
+   EXERCISES
+================================*/
 
-function saveExercise(){
-  const name = document.getElementById("exerciseName").value.trim();
+function addExercise(){
+  const name = document.getElementById("newExercise").value;
   if(!name) return;
 
-  const data = getExercises();
+  const data = getData();
+  if(!data[name]) data[name] = {};
 
-  if(!data[name]){
-    data[name] = {};
-    saveExercises(data);
-    loadExerciseList();
-  }
+  saveData(data);
+  loadExercises();
 }
 
-function loadExerciseList(){
+function loadExercises(){
   const select = document.getElementById("exerciseSelect");
-  select.innerHTML="";
+  select.innerHTML = "";
 
-  const data = getExercises();
+  const data = getData();
 
-  Object.keys(data).forEach(name=>{
-    const opt=document.createElement("option");
-    opt.value=name;
-    opt.textContent=name;
+  Object.keys(data).forEach(ex=>{
+    const opt = document.createElement("option");
+    opt.value = ex;
+    opt.textContent = ex;
     select.appendChild(opt);
   });
 
-  loadPRs();
+  updateFromExercise();
 }
 
-/* ======================
-   PR HANDLING
-====================== */
+/* ===============================
+   RM CALCULATION
+================================*/
 
-function loadPRs(){
-  const name=document.getElementById("exerciseSelect").value;
-  const data=getExercises();
-
-  const prs=data[name]||{};
-
-  rm1.value=prs.rm1||"";
-  rm2.value=prs.rm2||"";
-  rm3.value=prs.rm3||"";
-  rm5.value=prs.rm5||"";
-
-  autoFillPRs();
+function estimateRM(weight, fromRM, targetRM){
+  return weight * (rmTable[targetRM] / rmTable[fromRM]);
 }
 
-function savePRs(){
-  const name=document.getElementById("exerciseSelect").value;
-  if(!name) return;
+function updateRMOverview(){
 
-  const data=getExercises();
+  const weight = parseFloat(document.getElementById("rmWeight").value);
+  const testRM = parseInt(document.getElementById("testRM").value);
 
-  data[name]={
-    rm1:parseFloat(rm1.value)||null,
-    rm2:parseFloat(rm2.value)||null,
-    rm3:parseFloat(rm3.value)||null,
-    rm5:parseFloat(rm5.value)||null
-  };
+  if(!weight || !testRM) return;
 
-  saveExercises(data);
-}
+  const exercise =
+    document.getElementById("exerciseSelect").value;
 
-/* ======================
-   AUTO BERECHNUNG PRs
-====================== */
+  const data = getData();
+  const stored = data[exercise] || {};
 
-function estimateRM(weight, reps, target){
-  const oneRM = weight / rmTable[reps];
-  return oneRM * rmTable[target];
-}
+  const rmTargets = [1,2,3,5];
 
-function autoFillPRs(){
+  rmTargets.forEach(rm => {
 
-  const values={
-    1:parseFloat(rm1.value),
-    2:parseFloat(rm2.value),
-    3:parseFloat(rm3.value),
-    5:parseFloat(rm5.value)
-  };
+    let value;
 
-  const knownRep = Object.keys(values).find(r=>values[r]);
-
-  if(!knownRep) return;
-
-  const knownWeight=values[knownRep];
-
-  [1,2,3,5].forEach(r=>{
-    if(!values[r]){
-      const calc=estimateRM(knownWeight,knownRep,r);
-      document.getElementById("rm"+r).value=calc.toFixed(1);
+    // wenn gespeichert → benutzen
+    if(stored[rm]){
+      value = stored[rm];
     }
+    // sonst berechnen
+    else{
+      value = estimateRM(weight, testRM, rm);
+    }
+
+    document.getElementById("rm"+rm)
+      .textContent = value.toFixed(1);
   });
 }
 
-/* ======================
-   RM BERECHNUNGSTABELLE
-====================== */
+/* ===============================
+   ROUNDING
+================================*/
 
-function roundStep(value,step){
-  return Math.round(value/step)*step;
+function roundStep(value, step){
+  return Math.round(value / step) * step;
 }
+
+/* ===============================
+   MAIN CALCULATION
+================================*/
 
 function calculate(){
 
-  const rmWeight=parseFloat(rmWeightInput.value);
-  const testRM=parseInt(testRMSelect.value);
-  const RI=parseFloat(intensity.value)/100;
-  const step=parseFloat(roundStepSelect.value);
+  const rmWeight =
+    parseFloat(document.getElementById("rmWeight").value);
 
-  if(!rmWeight) return;
+  const testRM =
+    parseInt(document.getElementById("testRM").value);
 
-  resultTable.innerHTML="";
+  const RI =
+    parseFloat(document.getElementById("intensity").value)/100;
 
-  for(let reps=1;reps<=10;reps++){
+  const step =
+    parseFloat(document.getElementById("roundStep").value);
 
-    let percent=(rmTable[reps]*RI)/rmTable[testRM];
-    percent=roundStep(percent,step);
+  const tbody =
+    document.getElementById("resultTable");
 
-    let weight=rmWeight*percent;
+  tbody.innerHTML = "";
 
-    resultTable.innerHTML+=`
+  for(let reps=1; reps<=10; reps++){
+
+    let percent =
+      (rmTable[reps] * RI) /
+      rmTable[testRM];
+
+    percent = roundStep(percent, step);
+
+    const weight = rmWeight * percent;
+
+    tbody.innerHTML += `
       <tr>
         <td>${reps}</td>
         <td>${(percent*100).toFixed(1)}%</td>
@@ -160,35 +140,23 @@ function calculate(){
       </tr>
     `;
   }
+
+  updateRMOverview();
 }
 
-/* ======================
+/* ===============================
    EVENTS
-====================== */
-
-const rm1=document.getElementById("rm1");
-const rm2=document.getElementById("rm2");
-const rm3=document.getElementById("rm3");
-const rm5=document.getElementById("rm5");
-
-const rmWeightInput=document.getElementById("rmWeight");
-const testRMSelect=document.getElementById("testRM");
-const roundStepSelect=document.getElementById("roundStep");
-
-[rm1,rm2,rm3,rm5].forEach(el=>{
-  el.addEventListener("input",()=>{
-    autoFillPRs();
-    savePRs();
-  });
-});
+================================*/
 
 document.querySelectorAll("input,select")
-  .forEach(el=>el.addEventListener("input",calculate));
+  .forEach(el => el.addEventListener("input", calculate));
 
 document.getElementById("exerciseSelect")
-  .addEventListener("change",loadPRs);
+  .addEventListener("change", calculate);
 
-/* INIT */
+/* ===============================
+   INIT
+================================*/
 
-loadExerciseList();
+loadExercises();
 calculate();

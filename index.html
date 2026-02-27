@@ -3,32 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RI Calculator</title>
 
-<!-- Chart.js -->
+<title>RM Tracker</title>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  onSnapshot,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "DEIN_API_KEY",
+  authDomain: "DEIN_PROJEKT.firebaseapp.com",
+  projectId: "DEIN_PROJEKT_ID",
+  storageBucket: "DEIN.appspot.com",
+  messagingSenderId: "XXXX",
+  appId: "XXXX"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.db = db;
+window.firebaseFns = { collection, addDoc, onSnapshot, serverTimestamp };
+</script>
 
 <style>
 body{
-  font-family: Arial;
-  max-width:700px;
+  font-family:Arial;
+  max-width:900px;
   margin:auto;
   padding:20px;
-  background:#f4f4f4;
-}
-
-input,select,button{
-  width:100%;
-  padding:8px;
-  margin:5px 0 15px 0;
-  font-size:16px;
 }
 
 table{
-  width:100%;
   border-collapse:collapse;
-  background:white;
-  margin-bottom:20px;
+  width:100%;
+  margin-top:10px;
 }
 
 th,td{
@@ -37,107 +55,287 @@ th,td{
   text-align:center;
 }
 
-th{background:#eee;}
+input,select,button{
+  padding:8px;
+  margin:5px;
+}
 
-canvas{
-  background:white;
-  padding:10px;
+.section{
+  margin-top:30px;
+  padding:15px;
+  border:1px solid #ddd;
+  border-radius:10px;
 }
 </style>
 </head>
 
 <body>
 
-<h2>Relative Intensity Calculator</h2>
+<h1>🏋️ RM Tracker</h1>
 
-<!-- ATHLETE -->
-<h3>Athlet</h3>
+<!-- ATHLETEN -->
+<div class="section">
+<h2>Athlet</h2>
+
 <select id="athleteSelect"></select>
 <input id="newAthlete" placeholder="Neuer Athlet">
-<button onclick="addAthlete()">Athlet hinzufügen</button>
+<button onclick="addAthlete()">Anlegen</button>
+</div>
 
-<!-- EXERCISE -->
-<h3>Übung</h3>
-<select id="exerciseSelect"></select>
-<input id="newExercise" placeholder="Neue Übung">
-<button onclick="addExercise()">Übung speichern</button>
+<!-- QUICK RM TABLE -->
+<div class="section">
+<h2>Schnellübersicht</h2>
 
-<!-- RM OVERVIEW -->
-<h3>RM Übersicht</h3>
 <table>
-<thead>
 <tr>
 <th>1RM</th>
 <th>2RM</th>
 <th>3RM</th>
 <th>5RM</th>
 </tr>
-</thead>
-<tbody>
 <tr>
-<td id="rm1">-</td>
-<td id="rm2">-</td>
-<td id="rm3">-</td>
-<td id="rm5">-</td>
+<td id="q1"></td>
+<td id="q2"></td>
+<td id="q3"></td>
+<td id="q5"></td>
 </tr>
-</tbody>
 </table>
+</div>
 
-<!-- INPUT -->
-<label>Getestetes Gewicht (kg)</label>
-<input id="rmWeight" type="number" value="100">
+<!-- RM INPUT -->
+<div class="section">
+<h2>RM Test eingeben</h2>
 
-<label>Test RM (1–10)</label>
-<input id="testRM" type="number" min="1" max="10" value="3">
+<select id="rmSelect"></select>
+<input type="number" id="weightInput" placeholder="Gewicht">
+<button onclick="saveRM()">Speichern</button>
 
-<label>Relative Intensität</label>
-<select id="intensity">
-<option value="80">80%</option>
-<option value="82.5">82.5%</option>
-<option value="85">85%</option>
-<option value="87.5">87.5%</option>
-<option value="90">90%</option>
-<option value="92.5">92.5%</option>
-</select>
-
-<label>Rundung</label>
-<select id="roundStep">
-<option value="0.005">0,5 %</option>
-<option value="0.025" selected>2,5 %</option>
-</select>
-
-<!-- RESULT TABLE -->
-<table>
-<thead>
+<table id="rmTable">
 <tr>
-<th>Reps</th>
-<th>%</th>
-<th>Gewicht</th>
-</tr>
-</thead>
-<tbody id="resultTable"></tbody>
-</table>
-
-<!-- GRAPH -->
-<h3>Progress Graph</h3>
-<canvas id="progressChart"></canvas>
-
-<!-- HISTORY -->
-<h3>Progress History</h3>
-<table>
-<thead>
-<tr>
-<th>Datum</th>
-<th>Athlet</th>
-<th>Übung</th>
 <th>RM</th>
 <th>Gewicht</th>
 </tr>
-</thead>
-<tbody id="historyTable"></tbody>
+</table>
+</div>
+
+<!-- PROGRESS -->
+<div class="section">
+<h2>Progress Verlauf</h2>
+<canvas id="progressChart"></canvas>
+</div>
+
+<!-- LEADERBOARD -->
+<div class="section">
+<h2>🌍 Leaderboard</h2>
+
+<input id="lbName" placeholder="Name">
+<input id="lbExercise" placeholder="Übung">
+<input type="number" id="lbWeight" placeholder="Gewicht">
+
+<button onclick="submitLeaderboard()">Eintragen</button>
+
+<table>
+<tr>
+<th>Name</th>
+<th>Übung</th>
+<th>Gewicht</th>
+</tr>
+<tbody id="leaderboardBody"></tbody>
 </table>
 
-<script src="app.js"></script>
+</div>
+
+<script>
+/* ===============================
+   RM FORMEL
+================================*/
+function calc1RM(weight,reps){
+  return weight*(1+reps/30);
+}
+
+function calcFrom1RM(oneRM,reps){
+  return oneRM/(1+reps/30);
+}
+
+/* ===============================
+   ATHLETEN SYSTEM
+================================*/
+let athletes=JSON.parse(localStorage.getItem("athletes")||"[]");
+let currentAthlete=null;
+
+function addAthlete(){
+  const name=document.getElementById("newAthlete").value;
+  if(!name)return;
+  athletes.push(name);
+  localStorage.setItem("athletes",JSON.stringify(athletes));
+  renderAthletes();
+}
+
+function renderAthletes(){
+  const sel=document.getElementById("athleteSelect");
+  sel.innerHTML="";
+  athletes.forEach(a=>{
+    const o=document.createElement("option");
+    o.text=a;
+    sel.add(o);
+  });
+  currentAthlete=sel.value;
+  loadData();
+}
+
+document.getElementById("athleteSelect").onchange=()=>{
+  currentAthlete=document.getElementById("athleteSelect").value;
+  loadData();
+};
+
+/* ===============================
+   RM INPUT LIST
+================================*/
+const rmSelect=document.getElementById("rmSelect");
+for(let i=1;i<=10;i++){
+  const o=document.createElement("option");
+  o.value=i;
+  o.text=i+"RM";
+  rmSelect.add(o);
+}
+
+/* ===============================
+   STORAGE
+================================*/
+function key(){
+  return "rmData_"+currentAthlete;
+}
+
+function loadData(){
+  renderTable();
+  updateQuick();
+  updateChart();
+}
+
+function saveRM(){
+  const reps=parseInt(rmSelect.value);
+  const weight=parseFloat(document.getElementById("weightInput").value);
+
+  let data=JSON.parse(localStorage.getItem(key())||"{}");
+  data[reps]=weight;
+
+  let history=JSON.parse(localStorage.getItem(key()+"_history")||"[]");
+  history.push({
+    date:new Date().toLocaleDateString(),
+    oneRM:calc1RM(weight,reps)
+  });
+
+  localStorage.setItem(key(),JSON.stringify(data));
+  localStorage.setItem(key()+"_history",JSON.stringify(history));
+
+  loadData();
+}
+
+/* ===============================
+   RM TABLE
+================================*/
+function renderTable(){
+  const table=document.getElementById("rmTable");
+  table.innerHTML="<tr><th>RM</th><th>Gewicht</th></tr>";
+
+  let data=JSON.parse(localStorage.getItem(key())||"{}");
+
+  for(let i=1;i<=10;i++){
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${i}RM</td><td>${data[i]||"-"}</td>`;
+    table.appendChild(tr);
+  }
+}
+
+/* ===============================
+   QUICK TABLE
+================================*/
+function updateQuick(){
+  let data=JSON.parse(localStorage.getItem(key())||"{}");
+
+  let oneRM=data[1];
+  if(!oneRM){
+    for(let r in data){
+      oneRM=calc1RM(data[r],r);
+      break;
+    }
+  }
+  if(!oneRM)return;
+
+  document.getElementById("q1").innerText=(data[1]||oneRM).toFixed(1);
+  document.getElementById("q2").innerText=(data[2]||calcFrom1RM(oneRM,2)).toFixed(1);
+  document.getElementById("q3").innerText=(data[3]||calcFrom1RM(oneRM,3)).toFixed(1);
+  document.getElementById("q5").innerText=(data[5]||calcFrom1RM(oneRM,5)).toFixed(1);
+}
+
+/* ===============================
+   PROGRESS GRAPH
+================================*/
+let chart;
+
+function updateChart(){
+  const ctx=document.getElementById("progressChart");
+  let history=JSON.parse(localStorage.getItem(key()+"_history")||"[]");
+
+  if(chart) chart.destroy();
+
+  chart=new Chart(ctx,{
+    type:"line",
+    data:{
+      labels:history.map(h=>h.date),
+      datasets:[{
+        label:"1RM Progress",
+        data:history.map(h=>h.oneRM)
+      }]
+    }
+  });
+}
+
+/* ===============================
+   FIREBASE LEADERBOARD
+================================*/
+async function submitLeaderboard(){
+
+  const {collection,addDoc,serverTimestamp}=window.firebaseFns;
+
+  await addDoc(
+    collection(window.db,"leaderboard"),
+    {
+      name:lbName.value,
+      exercise:lbExercise.value,
+      weight:Number(lbWeight.value),
+      created:serverTimestamp()
+    }
+  );
+}
+
+function loadLeaderboard(){
+
+  const {collection,onSnapshot}=window.firebaseFns;
+
+  onSnapshot(collection(window.db,"leaderboard"),snap=>{
+    const body=document.getElementById("leaderboardBody");
+    body.innerHTML="";
+
+    snap.forEach(doc=>{
+      const d=doc.data();
+      body.innerHTML+=`
+        <tr>
+          <td>${d.name}</td>
+          <td>${d.exercise}</td>
+          <td>${d.weight}</td>
+        </tr>`;
+    });
+  });
+}
+
+/* ===============================
+   INIT
+================================*/
+renderAthletes();
+loadLeaderboard();
+
+</script>
 
 </body>
 </html>

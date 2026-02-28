@@ -1,74 +1,166 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>Workout App</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>RI Calculator</title>
+
+<style>
+body{
+font-family: Arial, sans-serif;
+max-width:500px;
+margin:auto;
+padding:20px;
+background:#f4f4f4;
+}
+
+input,select{
+width:100%;
+padding:8px;
+margin:5px 0 15px 0;
+font-size:16px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+background:white;
+}
+
+th,td{
+padding:8px;
+border:1px solid #ccc;
+text-align:center;
+}
+
+th{ background:#eee; }
+
+.section{
+background:white;
+padding:15px;
+margin-bottom:20px;
+border-radius:8px;
+}
+</style>
 </head>
 
 <body>
 
-<h1>Meine Workouts</h1>
+<h2>Relative Intensity Calculator</h2>
 
-<button onclick="loadWorkouts()">Workouts laden</button>
+<!-- =========================
+    WORKOUT SYSTEM
+========================= -->
 
-<ul id="workoutList"></ul>
+<div class="section">
+<h3>Workout auswählen</h3>
 
+<select id="workoutSelect">
+<option>Lade Workouts...</option>
+</select>
+
+<div id="workoutDetails"></div>
+</div>
+
+
+<!-- =========================
+    CALCULATOR (ALTER STAND)
+========================= -->
+
+<div class="section">
+
+<label>Getestetes RM (kg)</label>
+<input id="rmWeight" type="number" value="100">
+
+<label>Test‑RM (1–10)</label>
+<input id="testRM" type="number" min="1" max="10" value="3">
+
+<label>Relative Intensität</label>
+<select id="intensity">
+<option value="80">80%</option>
+<option value="82.5">82.5%</option>
+<option value="85">85%</option>
+<option value="87.5">87.5%</option>
+<option value="90">90%</option>
+<option value="92.5">92.5%</option>
+</select>
+
+<label>Rundung</label>
+<select id="roundStep">
+<option value="0.005">0,5 %</option>
+<option value="0.025" selected>2,5 %</option>
+</select>
+
+<table>
+<thead>
+<tr>
+<th>Reps</th>
+<th>% vom Test‑RM</th>
+<th>Gewicht (kg)</th>
+</tr>
+</thead>
+<tbody id="resultTable"></tbody>
+</table>
+
+</div>
+
+
+<!-- =========================
+    SCRIPTS
+========================= -->
+
+<!-- Dein Calculator -->
+<script src="app.js"></script>
+
+<!-- Workout/Firebase -->
+  <div id="workoutContainer"></div>
 <script type="module">
+import { loadWorkouts } from "./js/workouts.js";
+loadWorkouts();
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  getDocs
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+async function loadWorkout() {
 
+const workoutContainer = document.getElementById("workoutContainer");
+if (!workoutContainer) return;
 
-// 🔥 DEINE FIREBASE CONFIG HIER EINSETZEN
-const firebaseConfig = {
-  apiKey: "DEIN_API_KEY",
-  authDomain: "DEIN_PROJECT.firebaseapp.com",
-  projectId: "DEIN_PROJECT_ID",
-  storageBucket: "DEIN_PROJECT.appspot.com",
-  messagingSenderId: "XXXX",
-  appId: "XXXX"
-};
+workoutContainer.innerHTML = "Loading workout...";
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+try {
 
+const docRef = doc(db, "Workouts", "workout_001");
+const docSnap = await getDoc(docRef);
 
-// ✅ WORKOUTS LADEN
-async function loadWorkouts() {
-
-  console.log("Lade Workouts...");
-
-  const list = document.getElementById("workoutList");
-  list.innerHTML = "";
-
-  try {
-
-    const querySnapshot = await getDocs(collection(db, "Workouts"));
-
-    console.log("Dokumente gefunden:", querySnapshot.size);
-
-    querySnapshot.forEach((doc) => {
-
-      console.log(doc.data());
-
-      const li = document.createElement("li");
-      li.textContent = doc.data().name;
-
-      list.appendChild(li);
-    });
-
-  } catch (error) {
-    console.error("Fehler:", error);
-  }
+if (!docSnap.exists()) {
+workoutContainer.innerHTML = "No workout found.";
+return;
 }
 
-// GLOBAL verfügbar machen (für Button)
-window.loadWorkouts = loadWorkouts;
+const workout = docSnap.data();
 
+let html = `<h2>${workout.title}</h2>`;
+
+workout.parts.forEach(part => {
+html += `
+       <div class="workout-part">
+         <p><strong>Exercise:</strong> ${part.exercise}</p>
+         <p>Sets: ${part.sets}</p>
+         <p>Reps: ${part.reps}</p>
+         <p>Intensity: ${part.intensity}%</p>
+       </div>
+       <hr/>
+     `;
+});
+
+workoutContainer.innerHTML = html;
+
+} catch (error) {
+console.error(error);
+workoutContainer.innerHTML = "Error loading workout.";
+}
+}
+
+loadWorkout();
 </script>
 
 </body>

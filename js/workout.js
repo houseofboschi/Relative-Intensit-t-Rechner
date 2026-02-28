@@ -15,7 +15,7 @@ import {
 export async function loadWorkouts(){
 
   const snapshot =
-    await getDocs(collection(db,"workouts"));
+    await getDocs(collection(db,"Workouts"));
 
   const select =
     document.getElementById("workoutSelect");

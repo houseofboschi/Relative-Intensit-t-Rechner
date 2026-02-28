@@ -1,142 +1,123 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>Workout App</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: white;
-      text-align: center;
-      padding: 20px;
-    }
+<title>RI Calculator</title>
 
-    h1 {
-      color: #00ffcc;
-    }
+<style>
+body{
+  font-family: Arial, sans-serif;
+  max-width:500px;
+  margin:auto;
+  padding:20px;
+  background:#f4f4f4;
+}
 
-    #workoutContainer {
-      margin-top: 30px;
-      padding: 20px;
-      border-radius: 10px;
-      background: #222;
-      max-width: 500px;
-      margin-left: auto;
-      margin-right: auto;
-    }
+input,select{
+  width:100%;
+  padding:8px;
+  margin:5px 0 15px 0;
+  font-size:16px;
+}
 
-    .exercise {
-      background: #333;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 8px;
-    }
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:white;
+}
 
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      background: #00ffcc;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-  </style>
+th,td{
+  padding:8px;
+  border:1px solid #ccc;
+  text-align:center;
+}
+
+th{ background:#eee; }
+
+.section{
+  background:white;
+  padding:15px;
+  margin-bottom:20px;
+  border-radius:8px;
+}
+</style>
 </head>
 
 <body>
 
-  <h1>🏋️ Workout App</h1>
+<h2>Relative Intensity Calculator</h2>
 
-  <!-- Button zum Laden -->
-  <button onclick="loadWorkout()">Workout laden</button>
+<!-- =========================
+     WORKOUT SYSTEM
+========================= -->
 
-  <!-- Ausgabe -->
-  <div id="workoutContainer">
-    <h2 id="title">Kein Workout geladen</h2>
-    <div id="exercises"></div>
-  </div>
+<div class="section">
+  <h3>Workout auswählen</h3>
 
-  <!-- Firebase -->
-  <script type="module">
+  <select id="workoutSelect">
+    <option>Lade Workouts...</option>
+  </select>
 
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import {
-      getFirestore,
-      doc,
-      getDoc
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  <div id="workoutDetails"></div>
+</div>
 
 
-    // 🔥 HIER DEINE FIREBASE DATEN EINFÜGEN
-    const firebaseConfig = {
-      apiKey: "DEIN_API_KEY",
-      authDomain: "DEIN_PROJECT.firebaseapp.com",
-      projectId: "DEIN_PROJECT_ID",
-      storageBucket: "DEIN_PROJECT.appspot.com",
-      messagingSenderId: "XXXX",
-      appId: "XXXX"
-    };
+<!-- =========================
+     CALCULATOR (ALTER STAND)
+========================= -->
 
-    // Firebase starten
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+<div class="section">
+
+<label>Getestetes RM (kg)</label>
+<input id="rmWeight" type="number" value="100">
+
+<label>Test‑RM (1–10)</label>
+<input id="testRM" type="number" min="1" max="10" value="3">
+
+<label>Relative Intensität</label>
+<select id="intensity">
+  <option value="80">80%</option>
+  <option value="82.5">82.5%</option>
+  <option value="85">85%</option>
+  <option value="87.5">87.5%</option>
+  <option value="90">90%</option>
+  <option value="92.5">92.5%</option>
+</select>
+
+<label>Rundung</label>
+<select id="roundStep">
+  <option value="0.005">0,5 %</option>
+  <option value="0.025" selected>2,5 %</option>
+</select>
+
+<table>
+<thead>
+<tr>
+  <th>Reps</th>
+  <th>% vom Test‑RM</th>
+  <th>Gewicht (kg)</th>
+</tr>
+</thead>
+<tbody id="resultTable"></tbody>
+</table>
+
+</div>
 
 
-    // =========================
-    // WORKOUT LADEN
-    // =========================
-    window.loadWorkout = async function () {
+<!-- =========================
+     SCRIPTS
+========================= -->
 
-      console.log("Lade Workout...");
+<!-- Dein Calculator -->
+<script src="app.js"></script>
 
-      try {
-        // WICHTIG:
-        // Collection = Workouts (groß!)
-        // Document = workout_001
-        const docRef = doc(db, "Workouts", "workout_001");
-
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-
-          const data = docSnap.data();
-          console.log(data);
-
-          // Titel anzeigen
-          document.getElementById("title").innerText = data.title;
-
-          const exercisesDiv = document.getElementById("exercises");
-          exercisesDiv.innerHTML = "";
-
-          // Übungen anzeigen
-          data.parts.forEach(part => {
-
-            const div = document.createElement("div");
-            div.className = "exercise";
-
-            div.innerHTML = `
-              <strong>${part.exercise}</strong><br>
-              Sätze: ${part.sets}<br>
-              Wiederholungen: ${part.reps}<br>
-              Intensität: ${part.intensity}
-            `;
-
-            exercisesDiv.appendChild(div);
-          });
-
-        } else {
-          alert("Workout nicht gefunden!");
-        }
-
-      } catch (error) {
-        console.error("Fehler:", error);
-        alert("Fehler beim Laden — siehe Konsole");
-      }
-    };
-
-  </script>
+<!-- Workout/Firebase -->
+<script type="module">
+  import { loadWorkouts } from "./js/workouts.js";
+  loadWorkouts();
+</script>
 
 </body>
 </html>

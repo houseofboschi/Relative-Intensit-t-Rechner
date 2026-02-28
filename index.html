@@ -8,16 +8,39 @@
 
 <style>
 body{
-  font-family: Arial;
+  font-family: Arial, sans-serif;
   max-width:500px;
   margin:auto;
   padding:20px;
   background:#f4f4f4;
 }
-select,input{
+
+input,select{
   width:100%;
   padding:8px;
   margin:5px 0 15px 0;
+  font-size:16px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:white;
+}
+
+th,td{
+  padding:8px;
+  border:1px solid #ccc;
+  text-align:center;
+}
+
+th{ background:#eee; }
+
+.section{
+  background:white;
+  padding:15px;
+  margin-bottom:20px;
+  border-radius:8px;
 }
 </style>
 </head>
@@ -26,20 +49,71 @@ select,input{
 
 <h2>Relative Intensity Calculator</h2>
 
-<!-- ✅ WORKOUT DROPDOWN -->
-<h3>Workout auswählen</h3>
+<!-- =========================
+     WORKOUT SYSTEM
+========================= -->
 
-<select id="workoutSelect">
-  <option>Lade Workouts...</option>
+<div class="section">
+  <h3>Workout auswählen</h3>
+
+  <select id="workoutSelect">
+    <option>Lade Workouts...</option>
+  </select>
+
+  <div id="workoutDetails"></div>
+</div>
+
+
+<!-- =========================
+     CALCULATOR (ALTER STAND)
+========================= -->
+
+<div class="section">
+
+<label>Getestetes RM (kg)</label>
+<input id="rmWeight" type="number" value="100">
+
+<label>Test‑RM (1–10)</label>
+<input id="testRM" type="number" min="1" max="10" value="3">
+
+<label>Relative Intensität</label>
+<select id="intensity">
+  <option value="80">80%</option>
+  <option value="82.5">82.5%</option>
+  <option value="85">85%</option>
+  <option value="87.5">87.5%</option>
+  <option value="90">90%</option>
+  <option value="92.5">92.5%</option>
 </select>
 
-<!-- ✅ WORKOUT DETAILS -->
-<div id="workoutDetails"></div>
+<label>Rundung</label>
+<select id="roundStep">
+  <option value="0.005">0,5 %</option>
+  <option value="0.025" selected>2,5 %</option>
+</select>
 
-<!-- dein bestehender Calculator -->
+<table>
+<thead>
+<tr>
+  <th>Reps</th>
+  <th>% vom Test‑RM</th>
+  <th>Gewicht (kg)</th>
+</tr>
+</thead>
+<tbody id="resultTable"></tbody>
+</table>
+
+</div>
+
+
+<!-- =========================
+     SCRIPTS
+========================= -->
+
+<!-- Dein Calculator -->
 <script src="app.js"></script>
 
-<!-- Workout System -->
+<!-- Workout/Firebase -->
 <script type="module">
   import { loadWorkouts } from "./js/workouts.js";
   loadWorkouts();

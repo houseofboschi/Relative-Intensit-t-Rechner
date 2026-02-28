@@ -47,7 +47,7 @@ export async function loadWorkouts(){
 async function showWorkout(id){
 
   const snap =
-    await getDoc(doc(db,"workouts",id));
+    await getDoc(doc(db,"Workouts",id));
 
   const workout = snap.data();
 

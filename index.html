@@ -117,6 +117,47 @@ th{ background:#eee; }
 <script type="module">
   import { loadWorkouts } from "./js/workouts.js";
   loadWorkouts();
+
+  async function loadWorkout() {
+
+  const workoutContainer = document.getElementById("workoutContainer");
+  if (!workoutContainer) return;
+
+  workoutContainer.innerHTML = "Loading workout...";
+
+  try {
+
+    const docRef = doc(db, "Workouts", "workout_001");
+    const docSnap = await getDoc(docRef);
+
+    if (!docSnap.exists()) {
+      workoutContainer.innerHTML = "No workout found.";
+      return;
+    }
+
+    const workout = docSnap.data();
+
+    let html = `<h2>${workout.title}</h2>`;
+
+    workout.parts.forEach(part => {
+      html += `
+        <div class="workout-part">
+          <p><strong>Exercise:</strong> ${part.exercise}</p>
+          <p>Sets: ${part.sets}</p>
+          <p>Reps: ${part.reps}</p>
+          <p>Intensity: ${part.intensity}%</p>
+        </div>
+        <hr/>
+      `;
+    });
+
+    workoutContainer.innerHTML = html;
+
+  } catch (error) {
+    console.error(error);
+    workoutContainer.innerHTML = "Error loading workout.";
+  }
+}
 </script>
 
 </body>
